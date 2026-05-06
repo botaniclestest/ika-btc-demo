@@ -1,97 +1,86 @@
-# SOL IKA BTC TX
+# Ika BTC Demo
 
-A deliberately small Solana devnet + Ika pre-alpha Bitcoin testnet signing prototype.
+A Solana devnet + Ika pre-alpha Bitcoin testnet signing prototype.
 
-The goal is one clean proof:
+**Proven:** Create an Ika MPC dWallet on Solana, derive a Bitcoin testnet address from it, fund it, then sign and broadcast a real BTC transaction — all authorized through your Solana wallet.
 
-1. Connect a normal Solana devnet wallet.
-2. Create or register an Ika dWallet secp256k1 public key.
-3. Derive a Bitcoin testnet native SegWit P2WPKH address from that public key.
-4. Fund that address with testnet BTC.
-5. Build a Bitcoin testnet spend.
-6. Ask the signing path to approve the Bitcoin sighash.
-7. Attach the returned ECDSA signature and broadcast the raw transaction.
+## How It Works
 
-This project targets Bitcoin testnet native SegWit v0 P2WPKH addresses. Your address can be classified with the included `classifyBitcoinTestnetAddress` helper.
+```
+Phantom/Solflare  ──▶  approve_message CPI  ──▶  Ika dWallet Program
+        │                                              │
+        │                                    Ika mock signer produces
+        │                                    ECDSA sig on BIP143 preimage
+        ▼                                              │
+  BTC tx builder ◀─────────────────────────────────────┘
+        │
+        ▼
+  Bitcoin testnet broadcast
+```
 
-## Current Status
+The dWallet's secp256k1 key is split between your side and the Ika mock signer via MPC. No single private key exists anywhere. Your Solana wallet authorizes each signing request on-chain through Ika's `approve_message` instruction.
 
-The Bitcoin transaction path is complete for testnet P2WPKH:
+## The UI
 
-- derive a testnet address from a secp256k1 public key
-- fetch UTXOs
-- build the BIP143 P2WPKH sighash
-- sign each digest
-- finalize witness data
-- broadcast the raw transaction
+A clean 3-step wizard guides the flow:
 
-The app now includes both signing lanes:
+1. **Create dWallet** — Connects to Ika pre-alpha gRPC, requests DKG, stores result in localStorage
+2. **Fund & Check** — Shows derived BTC testnet P2WPKH address with QR code, fetches UTXOs from Blockstream
+3. **Spend BTC** — Build transaction, sign with Ika (requires Phantom confirmation), broadcast to testnet
 
-- **Ika pre-alpha lane**: creates a Secp256k1 dWallet through the official Solana pre-alpha gRPC service, derives the dWallet PDA, approves the Bitcoin BIP143 preimage on Solana with `EcdsaDoubleSha256`, asks Ika for the ECDSA signature, finalizes the witness, and broadcasts the raw testnet transaction.
-- **Local Solana-controlled lane**: asks your Solana wallet to sign a domain-separated authorization message, derives a deterministic local secp256k1 test key from that signature, and signs Bitcoin testnet spends. This lane is only a fallback/simulator for disposable testnet funds.
-
-Ika's Solana pre-alpha is a development network with a mock signer and disposable state. The app is wired to the current devnet defaults from the official pre-alpha repo:
-
-- dWallet gRPC: `https://pre-alpha-dev-1.ika.ika-network.net:443`
-- Solana RPC: `https://api.devnet.solana.com`
-- Ika dWallet program: `87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY`
-
-Do not use mainnet funds. Do not use real private keys. Treat all Solana/Ika pre-alpha state as disposable.
+Resume your dWallet across sessions — saved to localStorage, with optional chain scanning via `getProgramAccounts`.
 
 ## Quick Start
 
 ```bash
 npm install
-cp .env.example .env.local
+cp .env.example .env.local   # edit if needed
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`. Connect a Solana devnet wallet (Phantom or Solflare).
 
-## Useful Scripts
-
-Derive a Bitcoin testnet P2WPKH address from a secp256k1 public key:
+## Scripts
 
 ```bash
-npm run btc:derive -- 02ab...
+npm run btc:derive -- 02ab...              # derive BTC address from pubkey
+npm run btc:inspect -- tb1q...             # inspect a testnet address
+npm run btc:build -- --pubkey 02ab... --to tb1q... --amount 1000  # build spend draft
+npm test                                    # run all tests
 ```
-
-Inspect your existing testnet address:
-
-```bash
-npm run btc:inspect -- tb1q...your-testnet-address
-```
-
-Build a spend draft after the derived dWallet address has UTXOs:
-
-```bash
-npm run btc:build -- --pubkey 02ab... --to tb1q... --amount 1000
-```
-
-## Full Ika Testnet Loop
-
-1. Connect Phantom or Solflare on Solana devnet.
-2. Click `Create Ika dWallet`.
-3. Send a tiny amount of testnet BTC to the displayed `tb1q...` address.
-4. Click `Refresh`.
-5. Enter the destination testnet address and sats.
-6. Click `Build Sighash`.
-7. Click `Sign with Ika`.
-8. Click `Broadcast`.
-
-If the pre-alpha service, CORS, wallet signing, or direct approval layout changes, use `Create Local Signer` and `Sign Locally` to exercise the Bitcoin side while the Ika adapter is adjusted.
 
 ## Project Layout
 
-- `src/lib/bitcoin`: P2WPKH address derivation, UTXO lookup, transaction digest, signature finalization, broadcast helpers.
-- `src/lib/ika`: Ika/Solana pre-alpha gRPC client, PDA derivation, approval instruction, and signing adapter.
-- `src/components`: Browser UI for the four-button style MVP.
-- `anchor/programs/ika_btc_policy`: Minimal owner-authorized BTC sighash approval program.
-- `docs`: Notes on the Bitcoin sighash flow and Ika/Solana integration caveats.
+| Directory | Purpose |
+|---|---|
+| `src/lib/bitcoin` | P2WPKH address derivation, BIP143 sighash, UTXO selection, witness finalization, broadcast |
+| `src/lib/ika` | Ika gRPC client, PDA derivation, approval instruction builder, dWallet persistence |
+| `src/components` | React UI — wallet button, 3-step wizard, debug panel |
+| `src/app` | Next.js app shell, global styles |
+| `anchor/` | Anchor shell for custom policy program (not deployed — uses Ika's public program) |
+| `scripts/` | CLI tools for deriving, inspecting, and building BTC transactions |
+| `tests/` | Vitest tests for address derivation and local signer determinism |
 
-## Verified Source Pointers
+## Devnet Defaults
 
-- Ika docs: https://docs.ika.xyz/
-- Ika dWallet concept docs: https://docs.ika.xyz/docs/core-concepts/dwallets
-- Ika Solana pre-alpha repo: https://github.com/dwallet-labs/ika-pre-alpha
-- Bitcoin testnet explorer API used by default: https://blockstream.info/testnet/api/
+| Setting | Value |
+|---|---|
+| Solana RPC | `https://api.devnet.solana.com` |
+| Ika gRPC | `https://pre-alpha-dev-1.ika.ika-network.net:443` |
+| Ika Program ID | `87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY` |
+| BTC Explorer | `https://blockstream.info/testnet/api` |
+
+Override via `.env.local` — see `.env.example` for all options.
+
+## Caveats
+
+- **Ika pre-alpha** uses a single mock signer, not distributed MPC. Keys and state may be wiped at any time.
+- **No mainnet.** Testnet BTC and Solana devnet only.
+- **No recovery.** This is not a wallet — dWallets created here are disposable by design.
+- **Signing the same address across sessions** requires localStorage persistence or resuming the dWallet session. New DKG = new key.
+
+## References
+
+- [Ika dWallet docs](https://docs.ika.xyz/)
+- [Ika Solana pre-alpha repo](https://github.com/dwallet-labs/ika-pre-alpha)
+- [Bitcoin testnet explorer API](https://blockstream.info/testnet/api/)
