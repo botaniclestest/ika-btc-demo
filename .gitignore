@@ -1,0 +1,15 @@
+.env
+.env.local
+.env*.local
+.next/
+node_modules/
+target/
+dist/
+coverage/
+*.log
+Anchor.toml.local
+
+
+# Progress tracking with personal addresses
+docs/PROGRESS.md
+tsconfig.tsbuildinfo

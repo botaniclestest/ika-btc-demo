@@ -1,0 +1,46 @@
+{
+  "name": "sol_ika_btc_tx",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "lint": "next lint",
+    "test": "vitest run",
+    "btc:derive": "tsx scripts/derive-btc-address.ts",
+    "btc:inspect": "tsx scripts/inspect-address.ts",
+    "btc:build": "tsx scripts/build-spend.ts"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "@mysten/bcs": "^2.0.3",
+    "@noble/curves": "^1.9.1",
+    "@noble/hashes": "^2.2.0",
+    "@protobuf-ts/grpcweb-transport": "^2.11.1",
+    "@protobuf-ts/runtime": "^2.11.1",
+    "@protobuf-ts/runtime-rpc": "^2.11.1",
+    "@solana/web3.js": "^1.98.4",
+    "bitcoinjs-lib": "^6.1.7",
+    "bs58": "^6.0.0",
+    "buffer": "^6.0.3",
+    "lucide-react": "^0.468.0",
+    "next": "^16.2.4",
+    "qrcode.react": "^4.2.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^16.2.4",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.2"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
+  }
+}

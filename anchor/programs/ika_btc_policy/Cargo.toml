@@ -1,0 +1,19 @@
+[package]
+name = "ika_btc_policy"
+version = "0.1.0"
+description = "Owner-gated Bitcoin sighash approval shell for an Ika/Solana BTC testnet demo"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "ika_btc_policy"
+
+[features]
+no-entrypoint = []
+no-idl = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.32.1"
+
