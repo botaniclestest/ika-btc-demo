@@ -74,10 +74,10 @@ Override via `.env.local` — see `.env.example` for all options.
 
 ## Caveats
 
-- **Ika pre-alpha** uses a single mock signer, not distributed MPC. Keys and state may be wiped at any time.
+- **Ika pre-alpha** uses a single mock signer, not distributed MPC. The devnet program state may be wiped at any time.
 - **No mainnet.** Testnet BTC and Solana devnet only.
-- **No recovery.** This is not a wallet — dWallets created here are disposable by design.
-- **Signing the same address across sessions** requires localStorage persistence or resuming the dWallet session. New DKG = new key.
+- **This is not a wallet.** No seed phrases, no recovery paths, no production security.
+- **Same address, new session:** The dWallet PDA and secp256k1 public key are permanent on-chain. Reconnect the same Solana wallet and use the chain scanner or localStorage resume to keep signing with the same BTC address — no new DKG needed.
 
 ## References
 
