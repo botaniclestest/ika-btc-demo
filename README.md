@@ -2,7 +2,7 @@
 
 A Solana devnet + Ika pre-alpha Bitcoin testnet signing prototype.
 
-**Proven:** Create an Ika MPC dWallet on Solana, derive a Bitcoin testnet address from it, fund it, then sign and broadcast a real BTC transaction — all authorized through your Solana wallet.
+Create an Ika MPC dWallet on Solana, derive a Bitcoin testnet address from it, fund it, then sign and broadcast a real BTC transaction — all authorized through your Solana wallet.
 
 ## How It Works
 
